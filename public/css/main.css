@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.searchbarform {
+    display: flex;
+    flex-direction: row;
+}
+
+.searchbar {
+    display: flex;
+    flex-direction: column;
+}
+
+.content-editor {
+    resize: none;
+}
+
+/*
+    Markdown Formatting
+*/
+
+.markdown>pre {
+    background-color: #dcdcdc;
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+.markdown>h1:hover{
+    text-decoration: underline;
+}
+
+.markdown>h2:hover{
+    text-decoration: underline;
+}
+
+.markdown>h3:hover{
+    text-decoration: underline;
+}
