@@ -18,6 +18,8 @@ import (
 var templates = template.Must(template.ParseFiles("./templates/view.html", "./templates/index.html", "./templates/edit.html"))
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$|^/$")
 
+
+// Represents information in a given article.
 type Article struct {
 	Title string
 	Id    string
@@ -25,6 +27,7 @@ type Article struct {
 	Tags  []string
 }
 
+// Saves an article to the database
 func (article *Article) save(db *sql.DB) error {
 	articleStatement, err := db.Prepare(`
 		UPDATE article
@@ -41,6 +44,7 @@ func (article *Article) save(db *sql.DB) error {
 	return err
 }
 
+// Generic function encapsulating the functionality of rendering an article
 func renderTemplate(writer http.ResponseWriter, templateName string, pageInfo *Article) {
 	err := templates.ExecuteTemplate(writer, templateName+".html", pageInfo)
 
@@ -126,7 +130,6 @@ func editHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB, 
 		http.NotFound(writer, request)
 		return
 	}
-	log.Print(string(article.Body))
 
 	renderTemplate(writer, "edit", article)
 }
