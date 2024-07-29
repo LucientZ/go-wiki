@@ -1,7 +1,18 @@
+:root {
+    --code-color: #ededed;
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+
+.main-content{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    grid-auto-rows: 1fr
+}
 
 .searchbarform {
     display: flex;
@@ -13,16 +24,16 @@ body {
     flex-direction: column;
 }
 
-.content-editor {
-    resize: none;
-}
-
 /*
     Markdown Formatting
 */
 
+.markdown{
+    font-size: medium;
+}
+
 .markdown>pre {
-    background-color: #dcdcdc;
+    background-color: var(--code-color);
     border-radius: 5px;
     padding: 1rem;
 }
@@ -37,4 +48,12 @@ body {
 
 .markdown>h3:hover{
     text-decoration: underline;
+}
+
+.markdown code{
+    background-color: var(--code-color);
+    height: 100%;
+    border-radius: 5px;
+    padding: 0 0.5rem 0 0.5rem;
+    font-size: large;
 }

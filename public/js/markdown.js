@@ -14,7 +14,13 @@ const markdownRules = [
     [/^#{1}\s+([^\n]+)/gm, "<h1>$1</h1>"],
 
     // Text Formatting
-    [/([^\n]+[\S]+\n?)/g, `<p>$1</p>`]
+    [/([^\n]+[\S]+\n?)/gm, "<p>$1</p>"],
+    [/\*\*\*([ |\t|\r|\S]+)\*\*\*/g, "<i><b>$1</b></i>"],
+    [/\*\*([ |\t|\r|\S]+)\*\*/g, "<b>$1</b>"],
+    [/\*([ |\t|\r|\S]+)\*/g, "<i>$1</i>"],
+    [/`([ |\t|\r|\S]+)`/g, "<code>$1</code>"],
+    [/__([ |\t|\r|\S]+)__/g, "<u>$1</u>"],
+    [/~~([ |\t|\r|\S]+)~~/g, "<s>$1</s>"],
 ]
 
 /**
@@ -66,7 +72,6 @@ function renderMarkdownElement(element, parsedLines) {
 
     for (const line of parsedLines) {
         let html = escapeHtml(line.innerText);
-        console.log(html)
         if (line.isBlock) {
             html = html.replace(/```[\S]*(\r?\n[\s\S]*?)```/gm, '<pre>$1</pre>')
         }
@@ -79,7 +84,6 @@ function renderMarkdownElement(element, parsedLines) {
         finalHTML = finalHTML.concat(html);
     }
 
-    console.log(finalHTML)
 
     element.innerHTML = finalHTML;
 }

@@ -5,23 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/edit.css">
+    <script type="text/javascript" src="/static/js/markdown.js"></script>
     <title>[Edit] {{.Title}} - The Funny Wiki</title>
 </head>
 
 <body>
-    <form action="/save/{{.Id}}" method="POST">
-        <div><textarea class="content-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea></div>
-        <div><textarea class="content-editor" name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
-        <div><input type="submit" value="Save"></div>
-    </form>
+    <div class="main-content">
+        <form class="edit-form" action="/save/{{.Id}}" method="POST">
+            <textarea class="title-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea>
+            <textarea class="content-editor" name="body" rows="20" cols="80" id="article-content">{{printf "%s" .Body}}</textarea>
+            <div><input type="submit" value="Save"></div>
+        </form>
+        <div>
+            <div class="markdown" id="article-preview">{{printf "%s" .Body}}</div>
+        </div>
+        <div>
+            <h2>Tags</h2>
+            {{range .Tags}}
+            <button class="tag-button">
+                {{.}}
+            </button>
+            {{end}}
+        </div>
+    </div>
 
-    <h2>Tags</h2>
-    
-    {{range .Tags}}
-    <button class="tag-button">
-        {{.}}
-    </button>
-    {{end}}
+
+    <script type="text/javascript" src="/static/js/edit.js"></script>
 </body>
 
 </html>

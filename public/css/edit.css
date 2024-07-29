@@ -1,0 +1,13 @@
+.title-editor {
+    resize: none;
+}
+
+.content-editor {
+    resize: none;
+    flex: 1;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+}
