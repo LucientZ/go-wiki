@@ -16,8 +16,14 @@ import (
 
 // Globals
 var templates = template.Must(template.ParseFiles("./templates/view.html", "./templates/index.html", "./templates/edit.html"))
-var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$|^/$")
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$|^/(new/)?$")
 
+// Information
+type ExternalArticles struct {
+	ArticleIds    []uint64
+	ArticleTitles []string
+	Tags          []string
+}
 
 // Represents information in a given article.
 type Article struct {
@@ -34,14 +40,85 @@ func (article *Article) save(db *sql.DB) error {
 		SET title = ?, body = ?
 		WHERE id = ?;
 	`)
+	defer articleStatement.Close()
 	if err != nil {
 		return err
 	}
 
 	_, err = articleStatement.Exec(&article.Title, &article.Body, &article.Id)
-	defer articleStatement.Close()
 
 	return err
+}
+
+// Creates a new article in the database and return the id of the article
+func (article *Article) create(db *sql.DB) (uint64, error) {
+	transaction, err := db.Begin()
+
+	articleStatement, err := transaction.Prepare(`
+		INSERT INTO article
+		(title, body) VALUES (?, ?);
+	`)
+	defer articleStatement.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	row, err := articleStatement.Query(&article.Title, &article.Body)
+	var articleId uint64
+	row.Scan(&articleId)
+	if err != nil {
+		return 0, err
+	}
+
+	return articleId, err
+}
+
+// Obtains info about other articles
+func getOtherArticleInformation(db *sql.DB) (*ExternalArticles, error) {
+	// Obtain information about articles
+	articleRows, err := db.Query(`
+		SELECT id, title FROM article;	
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	tagRows, err := db.Query(`
+		SELECT DISTINCT tag_name FROM tag;
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	var articles []uint64
+	var titles []string
+	var tags []string
+
+	for articleRows.Next() {
+		var articleId uint64
+		var articleTitle string
+		if err := articleRows.Scan(&articleId, &articleTitle); err != nil {
+			return nil, err
+		}
+		articleTitle = html.EscapeString(articleTitle)
+		articles = append(articles, articleId)
+		titles = append(titles, articleTitle)
+	}
+
+	for tagRows.Next() {
+		var tag string
+		if err := tagRows.Scan(&tag); err != nil {
+			return nil, err
+		}
+		tag = html.EscapeString(tag)
+		tags = append(tags, tag)
+	}
+
+	return &ExternalArticles{
+		ArticleIds:    articles,
+		ArticleTitles: titles,
+		Tags:          tags,
+	}, nil
 }
 
 // Generic function encapsulating the functionality of rendering an article
@@ -70,10 +147,10 @@ func loadArticle(articleId string, db *sql.DB) (*Article, error) {
 		SELECT title, body FROM article
 		WHERE id = ?;
 	`)
+	defer articleStatement.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer articleStatement.Close()
 
 	if err = articleStatement.QueryRow(id).Scan(&title, &body); err != nil {
 		return nil, err
@@ -84,10 +161,10 @@ func loadArticle(articleId string, db *sql.DB) (*Article, error) {
 		SELECT tag_name FROM tag
 		WHERE article_id = ?;
 	`)
+	defer tagStatement.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer tagStatement.Close()
 
 	rows, err := tagStatement.Query(id)
 	if err != nil {
@@ -143,23 +220,46 @@ func saveHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB, 
 		Id:    articleId,
 	}
 
-	err := article.save(db)
-	if err != nil {
+	if err := article.save(db); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(writer, request, "/view/"+articleId, http.StatusFound)
+	http.Redirect(writer, request, "/edit/"+articleId, http.StatusFound)
 }
 
 // Handles requests for the root path
 func indexHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
-	err := templates.ExecuteTemplate(writer, "index.html", nil)
 
+	articleInfo, err := getOtherArticleInformation(db)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
 		return
 	}
+
+	err = templates.ExecuteTemplate(writer, "index.html", articleInfo)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+}
+
+func newHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
+	article := Article{
+		Title: "New Article",
+		Body:  []byte(""),
+		Tags:  make([]string, 0),
+	}
+
+	id, err := article.create(db)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	http.Redirect(writer, request, "/edit/"+strconv.FormatUint(id, 10), http.StatusFound)
 }
 
 // Creates a handler that has access to a database
@@ -191,10 +291,10 @@ func createArticleHandler(fn func(http.ResponseWriter, *http.Request, *sql.DB, s
 
 func main() {
 	db, err := sql.Open("sqlite3", "page-content.db")
+	defer db.Close()
 	if err != nil {
 		log.Fatal("db initialization: ", err)
 	}
-	defer db.Close()
 
 	initScript, err := os.ReadFile("./sql/init.sql")
 
@@ -206,6 +306,7 @@ func main() {
 	fs := http.FileServer(http.Dir("./public"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/view/", createArticleHandler(viewHandler, db))
+	http.HandleFunc("/new/", createHandler(newHandler, db))
 	http.HandleFunc("/save/", createArticleHandler(saveHandler, db))
 	http.HandleFunc("/edit/", createArticleHandler(editHandler, db))
 	http.HandleFunc("/", createHandler(indexHandler, db))

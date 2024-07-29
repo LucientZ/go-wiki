@@ -14,19 +14,21 @@ const markdownRules = [
     [/^#{1}\s+([^\n]+)/gm, "<h1>$1</h1>"],
 
     // Text Formatting
-    [/([^\n]+[\S]+\n?)/gm, "<p>$1</p>"],
-    [/\*\*\*([ |\t|\r|\S]+)\*\*\*/g, "<i><b>$1</b></i>"],
-    [/\*\*([ |\t|\r|\S]+)\*\*/g, "<b>$1</b>"],
-    [/\*([ |\t|\r|\S]+)\*/g, "<i>$1</i>"],
-    [/`([ |\t|\r|\S]+)`/g, "<code>$1</code>"],
-    [/__([ |\t|\r|\S]+)__/g, "<u>$1</u>"],
-    [/~~([ |\t|\r|\S]+)~~/g, "<s>$1</s>"],
+    [/([^\n]+[\S]+)\n?/gm, "<p>$1</p>"],                  // All loose text goes into paragraphs
+    [/<p>(<h[1-6]>[^\n]+<\/h[1-6]>)\n?<\/p>/g, "$1"],     // Remove Headers inside paragraphs
+    [/\*\*\*([ |\t|\r|\S]+)\*\*\*/g, "<i><b>$1</b></i>"], // *italics*
+    [/\*\*([ |\t|\r|\S]+)\*\*/g, "<b>$1</b>"],            // **bold**
+    [/\*([ |\t|\r|\S]+)\*/g, "<i>$1</i>"],                // ***bold and italics***
+    [/`([ |\t|\r|\S]+)`/g, "<code>$1</code>"],            // `code`
+    [/__([ |\t|\r|\S]+)__/g, "<u>$1</u>"],                // __underline__ 
+    [/~~([ |\t|\r|\S]+)~~/g, "<s>$1</s>"],                // ~~strikethrough~~
 
     // Images
-    [/\!\[([^)]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" title=$3>'],
+    [/\!\[([^)]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">'], // !(alt-text)[link]
 
     // Links
-    [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#2A5DB0;text-decoration: none;">$1</a>',],
+    [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="text-decoration: none;">$1</a>',], // (Text)
+
 ]
 
 /**
@@ -77,7 +79,7 @@ function renderMarkdownElement(element, parsedLines) {
     let finalHTML = "";
 
     for (const line of parsedLines) {
-        let html = escapeHtml(line.innerText);
+        let html = escapeHtml(line.innerText).trim();
         if (line.isBlock) {
             html = html.replace(/```[\S]*(\r?\n[\s\S]*?)```/gm, '<pre>$1</pre>')
         }
@@ -89,7 +91,6 @@ function renderMarkdownElement(element, parsedLines) {
 
         finalHTML = finalHTML.concat(html);
     }
-
 
     element.innerHTML = finalHTML;
 }

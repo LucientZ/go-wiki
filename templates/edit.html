@@ -12,22 +12,26 @@
 </head>
 
 <body>
-    <div class="main-content">
-        <form class="edit-form" action="/save/{{.Id}}" method="POST">
-            <textarea class="title-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea>
-            <textarea class="content-editor" name="body" rows="20" cols="80" id="article-content">{{printf "%s" .Body}}</textarea>
-            <div><input type="submit" value="Save"></div>
-        </form>
-        <div>
-            <div class="markdown" id="article-preview">{{printf "%s" .Body}}</div>
-        </div>
-        <div>
-            <h2>Tags</h2>
-            {{range .Tags}}
-            <button class="tag-button">
-                {{.}}
-            </button>
-            {{end}}
+    <div class="flex-row-center full-width">
+        <div class="main-content">
+            <a href="/view/{{.Id}}">Back to Article Page</a>
+            <h1 id="title-preview">{{.Title}}</h1>
+            <form id="edit-form" class="edit-form" action="/save/{{.Id}}" method="POST">
+                <textarea class="title-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea>
+                <textarea class="content-editor" name="body" rows="20" cols="80" id="article-content">{{printf "%s" .Body}}</textarea>
+                <div><input type="submit" value="Save"></div>
+            </form>
+            <div>
+                <div class="markdown" id="article-preview">{{printf "%s" .Body}}</div>
+            </div>
+            <div>
+                <h2>Tags</h2>
+                {{range .Tags}}
+                <button class="tag-button">
+                    {{.}}
+                </button>
+                {{end}}
+            </div>
         </div>
     </div>
 

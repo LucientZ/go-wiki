@@ -10,26 +10,48 @@
 </head>
 
 <body>
-    <h1>Welcome to The Funny Wiki</h1>
-    <h3>Where dreams come to die</h3>
+    <header>
+        <a href="/new"><button>Create New Article</button></a>
+    </header>
+    <div class="main-content">
+        <div>
+            <h1>Welcome to The Funny Wiki</h1>
+            <h3>Where dreams come to die</h3>
 
-    <label for="query">Search for a specific page</label>
-    <form action="/search" class="searchbarform">
-        <div class="searchbar">
-            <input type="text" id="query" name="query">
+            <label for="query">Search for a specific page</label>
+            <form action="/search" class="searchbarform">
+                <div class="searchbar">
+                    <input type="text" id="query" name="query">
+                </div>
+
+                <div class="searchsubmit">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+
+            <h4>or</h4>
+
+            <div>
+                <p>Search by tag</p>
+                {{range $tag := .Tags}}
+                <button class="tag-button">
+                    {{.}}
+                </button>
+                {{end}}
+            </div>
         </div>
-
-        <div class="searchsubmit">
-            <button type="submit">Search</button>
+        <div>
+            <h2>Browse Articles</h2>
+            <ul>
+                {{$titles := .ArticleTitles}}
+                {{range $index, $id := .ArticleIds}}
+                <li>
+                    <a href="/view/{{$id}}">{{index $titles $index}}</a>
+                </li>
+                {{end}}
+            </ul>
         </div>
-    </form>
-
-    <p>or</p>
-
-    <p>Search by tag</p>
-
-
-    <footer></footer>
+    </div>
 </body>
 
 </html>
