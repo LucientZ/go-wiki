@@ -21,6 +21,12 @@ const markdownRules = [
     [/`([ |\t|\r|\S]+)`/g, "<code>$1</code>"],
     [/__([ |\t|\r|\S]+)__/g, "<u>$1</u>"],
     [/~~([ |\t|\r|\S]+)~~/g, "<s>$1</s>"],
+
+    // Images
+    [/\!\[([^)]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" title=$3>'],
+
+    // Links
+    [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#2A5DB0;text-decoration: none;">$1</a>',],
 ]
 
 /**
