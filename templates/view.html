@@ -12,7 +12,14 @@
 </head>
 
 <body>
-    <div class="">
+    <nav class="main-header">
+        <a href="/"><img src="/static/images/favicon.png" height="100px"></a>
+        <form action="/search" class="search-bar-form">
+            <input class="search-bar" type="text" id="query" name="query" aria-label="Searchbar">
+            <button class="search-submit" type="submit" aria-label="Search article button">Search</button>
+        </form>
+    </nav>
+    <div class="flex-col-center">
         <h1>{{.Title}}</h1>
         <p>[<a href="/edit/{{.Id}}">edit</a>]</p>
         <div class="markdown article-content">
@@ -22,9 +29,9 @@
     </div>
 
     <h2>Tags</h2>
-    {{range .Tags}}
-    <button class="tag-button">
-        {{.}}
+    {{range $index, $tag := .Tags}}
+    <button aria-label="Search for articles labeled: {{$tag}}" class="tag-button">
+        {{$tag}}
     </button>
     {{end}}
 
