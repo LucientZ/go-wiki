@@ -53,24 +53,35 @@ func (article *Article) save(db *sql.DB) error {
 // Creates a new article in the database and return the id of the article
 func (article *Article) create(db *sql.DB) (uint64, error) {
 	transaction, err := db.Begin()
+	defer func(){
+		if err != nil{
+			transaction.Rollback()
+		} else{
+			transaction.Commit()
+		}
+	}()
 
 	articleStatement, err := transaction.Prepare(`
 		INSERT INTO article
 		(title, body) VALUES (?, ?);
 	`)
 	defer articleStatement.Close()
+
 	if err != nil {
 		return 0, err
 	}
 
-	row, err := articleStatement.Query(&article.Title, &article.Body)
-	var articleId uint64
-	row.Scan(&articleId)
+	result, err := articleStatement.Exec(&article.Title, &article.Body)
 	if err != nil {
 		return 0, err
 	}
 
-	return articleId, err
+	articleId, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(articleId), err
 }
 
 // Obtains info about other articles

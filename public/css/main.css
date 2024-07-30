@@ -81,7 +81,7 @@ body {
 }
 
 .markdown img {
-    max-width: 30%;
+    max-width: 15rem;
     float: left;
 }
 
