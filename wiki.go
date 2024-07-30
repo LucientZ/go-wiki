@@ -20,7 +20,7 @@ var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$|^/(new/)?
 
 // Information
 type ExternalArticles struct {
-	ArticleIds    []uint64
+	ArticleIds    []int64
 	ArticleTitles []string
 	Tags          []string
 }
@@ -51,12 +51,12 @@ func (article *Article) save(db *sql.DB) error {
 }
 
 // Creates a new article in the database and return the id of the article
-func (article *Article) create(db *sql.DB) (uint64, error) {
+func (article *Article) create(db *sql.DB) (int64, error) {
 	transaction, err := db.Begin()
-	defer func(){
-		if err != nil{
+	defer func() {
+		if err != nil {
 			transaction.Rollback()
-		} else{
+		} else {
 			transaction.Commit()
 		}
 	}()
@@ -81,7 +81,7 @@ func (article *Article) create(db *sql.DB) (uint64, error) {
 		return 0, err
 	}
 
-	return uint64(articleId), err
+	return articleId, err
 }
 
 // Obtains info about other articles
@@ -101,12 +101,12 @@ func getOtherArticleInformation(db *sql.DB) (*ExternalArticles, error) {
 		return nil, err
 	}
 
-	var articles []uint64
+	var articles []int64
 	var titles []string
 	var tags []string
 
 	for articleRows.Next() {
-		var articleId uint64
+		var articleId int64
 		var articleTitle string
 		if err := articleRows.Scan(&articleId, &articleTitle); err != nil {
 			return nil, err
@@ -270,7 +270,7 @@ func newHandler(writer http.ResponseWriter, request *http.Request, db *sql.DB) {
 		return
 	}
 
-	http.Redirect(writer, request, "/edit/"+strconv.FormatUint(id, 10), http.StatusFound)
+	http.Redirect(writer, request, "/edit/"+strconv.FormatInt(id, 10), http.StatusFound)
 }
 
 // Creates a handler that has access to a database
