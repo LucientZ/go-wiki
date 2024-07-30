@@ -1,22 +1,26 @@
-const articleContent = document.getElementById("article-content");
+const titleEditor = document.getElementById("title-editor");
+const contentEditor = document.getElementById("content-editor");
 let changesMade = false;
 /**
  * 
  * @param {Element} element
  */
 function renderPreview() {
-    document.getElementById("article-preview").textContent = articleContent.value;
+    document.getElementById("article-preview").textContent = contentEditor.value;
     parseMarkdownElements(); // From markdown.js
 }
 
-articleContent.addEventListener("input", () => {
+contentEditor.addEventListener("input", () => {
     if (!changesMade) {
         document.title = `* ${document.title}`
         changesMade = true;
-        console.log(changesMade)
     }
 
     renderPreview();
+});
+
+titleEditor.addEventListener("input", () => {
+    document.getElementById("title-preview").innerText = `${titleEditor.value} (Preview)`
 });
 
 // Capture ctrl+s or cmd+s to save the article

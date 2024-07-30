@@ -17,8 +17,8 @@
             <a href="/view/{{.Id}}">Back to Article Page</a>
             <h1 id="title-preview">{{.Title}} (Preview)</h1>
             <form id="edit-form" class="edit-form" action="/save/{{.Id}}" method="POST">
-                <textarea class="title-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea>
-                <textarea class="content-editor" name="body" rows="20" cols="80" id="article-content">{{printf "%s" .Body}}</textarea>
+                <textarea id="title-editor" class="title-editor" name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea>
+                <textarea id="content-editor" class="content-editor" name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea>
                 <div><input type="submit" value="Save"></div>
             </form>
             <div>
