@@ -2,6 +2,7 @@
 
 :root {
     --code-color: #ededed;
+    --thematic-break-color: #ffffff;
 }
 
 body {
@@ -117,4 +118,10 @@ body {
     border-radius: 5px;
     padding: 0 0.5rem 0 0.5rem;
     font-size: large;
+}
+
+.markdown hr {
+    margin: 2rem 0 2rem 0;
+    width: 100%;
+    background-color: var(--thematic-break-color);
 }
