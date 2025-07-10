@@ -40,10 +40,10 @@ func (article *Article) save(db *sql.DB) error {
 		SET title = ?, body = ?
 		WHERE id = ?;
 	`)
-	defer articleStatement.Close()
 	if err != nil {
 		return err
 	}
+	defer articleStatement.Close()
 
 	_, err = articleStatement.Exec(&article.Title, &article.Body, &article.Id)
 
@@ -65,11 +65,11 @@ func (article *Article) create(db *sql.DB) (int64, error) {
 		INSERT INTO article
 		(title, body) VALUES (?, ?);
 	`)
-	defer articleStatement.Close()
-
 	if err != nil {
 		return 0, err
 	}
+	defer articleStatement.Close()
+	
 
 	result, err := articleStatement.Exec(&article.Title, &article.Body)
 	if err != nil {
@@ -158,10 +158,10 @@ func loadArticle(articleId string, db *sql.DB) (*Article, error) {
 		SELECT title, body FROM article
 		WHERE id = ?;
 	`)
-	defer articleStatement.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer articleStatement.Close()
 
 	if err = articleStatement.QueryRow(id).Scan(&title, &body); err != nil {
 		return nil, err
@@ -172,10 +172,10 @@ func loadArticle(articleId string, db *sql.DB) (*Article, error) {
 		SELECT tag_name FROM tag
 		WHERE article_id = ?;
 	`)
-	defer tagStatement.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer tagStatement.Close()
 
 	rows, err := tagStatement.Query(id)
 	if err != nil {
@@ -302,10 +302,10 @@ func createArticleHandler(fn func(http.ResponseWriter, *http.Request, *sql.DB, s
 
 func main() {
 	db, err := sql.Open("sqlite3", "page-content.db")
-	defer db.Close()
 	if err != nil {
 		log.Fatal("db initialization: ", err)
 	}
+	defer db.Close()
 
 	initScript, err := os.ReadFile("./sql/init.sql")
 
@@ -322,7 +322,7 @@ func main() {
 	http.HandleFunc("/edit/", createArticleHandler(editHandler, db))
 	http.HandleFunc("/", createHandler(indexHandler, db))
 
-	log.Print("Listening on http://localhost:8080")
+	log.Print("Listening on http://localhost:8081")
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }

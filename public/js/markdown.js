@@ -29,7 +29,7 @@ const textFormatRules = [
     [/`([ \t\r\S]+)`/g, "<code>$1</code>"],            // `code`
     [/__([ \t\r\S]+)__/g, "<u>$1</u>"],                // __underline__ 
     [/~~([ \t\r\S]+)~~/g, "<s>$1</s>"],                // ~~strikethrough~~
-]
+];
 
 /**
  * Used for rendering anything that links to an external resource
@@ -41,7 +41,7 @@ const externalContentRules = [
 
     // Links
     [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="text-decoration: none;">$1</a>',], // (Text)
-]
+];
 
 /** 
  * Used rendering for non-specific cases
@@ -55,18 +55,15 @@ const markdownRules = [
     [/^#{3}\s+([^\n]+)/gm, "<h3>$1</h3>"],
     [/^#{2}\s+([^\n]+)/gm, "<h2>$1</h2>"],
     [/^#{1}\s+([^\n]+)/gm, "<h1>$1</h1>"],
-
-    // Thematic Break
-    [/^---\n/g, "<hr>"],
-
+    
     // Images/Links
     ...externalContentRules,
-
+    
     // Text Formatting (must go after all other styling)
     [/([^\n]+[\S]+)\n?/g, "<p>$1</p>"],                   // All loose text goes into paragraphs
     [/<p>(<[^\n]+>)\n?<\/p>/g, "$1"],                     // Remove html inside of paragraphs
     ...textFormatRules,
-]
+];
 
 /**
  * Used for rendering tables 
@@ -75,21 +72,26 @@ const markdownRules = [
 const tableRules = [
     ...externalContentRules,
     ...textFormatRules
-]
+];
 
 /**
  * Used for rendering ordered/unordered lists 
  * @type {ParsingRules} 
  */
 const listRules = [
-    [/^\s*(?:[-|\+|\*]|[{0-9}]+\.)\s+([^\n]+)/gm, "<li>$1</li>"], // Create list-items
+    [/^\s*(?:[-|\+|\*]|[{0-9}]+\.)\s+([^\n]+)/gm, "<li>$1</li>"],            // Create list-items
+    [/\[ \]/gm, "<input class=\"uncheckable\" type=\"checkbox\">"],          // Checkboxes 
+    [/\[x\]/gm, "<input class=\"uncheckable\" type=\"checkbox\" checked>"],  // Checked checkboxes
     ...externalContentRules,
     ...textFormatRules,
-]
+];
 
 /**
  * Replaces special html characters with escaped characters to
  * attempt prevention of possible Cross-Site scripting
+ * 
+ * This also deals with characters that the user wants escaped to
+ * stop them from being formatted
  * 
  * Note: There may be other ways of scripting involving 
  *       the actual rendering process, so be careful!
@@ -117,14 +119,15 @@ function parseMarkdownElements() {
     const elements = document.querySelectorAll(".markdown");
 
     for (const e of elements) {
-        const codeblockRegex = /(```[\S]*\r?\n[\s\S]*?```)/gm
-        const listRegex = /^((?:\s*(?:[-\+\*]|[{0-9}]+\.)\s+[^\n]+\n?)+)/gm
+        const codeblockRegex = /(```[\S]*\r?\n[\s\S]*?```)/gm;
+        const listRegex = /^((?:\s*(?:[-\+\*]|[{0-9}]+\.)\s+[^\n]*\n?)+)/gm;
+        const tableRegex = /(^(?:\|[^\n|]*)+\|\n(?:\|[:-\s]+)+\|\n(?:(?:\|[^\n|]*)+\|\n?)*)/gm;
 
         /** @type {String[]} */
         let splitText = e.textContent
             .split(codeblockRegex)
-            .map(val => val.split(listRegex))
-            .flat();
+            .map(val => val.split(listRegex)).flat()
+            .map(val => val.split(tableRegex)).flat();
 
         /** @type {ElementContext[]} */
         let parsedLines = splitText.map((value) => {
@@ -136,6 +139,9 @@ function parseMarkdownElements() {
             else if (listRegex.test(value)) {
                 renderMode = RenderModes.LIST;
             }
+            else if (tableRegex.test(value)) {
+                renderMode = RenderModes.TABLE;
+            }
 
             return {
                 innerText: value,
@@ -143,7 +149,7 @@ function parseMarkdownElements() {
             };
         });
 
-        console.log(parsedLines);
+        console.log("Parsed lines:", parsedLines);
 
         renderMarkdownElement(e, parsedLines);
     }
@@ -187,6 +193,13 @@ async function renderMarkdownElement(element, parsedLines) {
     }
 
     element.innerHTML = finalHTML;
+
+    const uncheckableCheckboxes = document.querySelectorAll(".uncheckable");
+    for (const checkbox of uncheckableCheckboxes) {
+        checkbox.addEventListener("click", (event) => {
+            event.preventDefault();
+        });
+    }
 }
 
 window.onload = () => {

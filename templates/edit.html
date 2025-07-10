@@ -12,6 +12,13 @@
 </head>
 
 <body>
+    <nav class="main-header">
+        <a href="/"><img src="/static/images/favicon.png" height="100px"></a>
+        <form action="/search" class="search-bar-form">
+            <input class="search-bar" type="text" id="query" name="query" aria-label="Searchbar">
+            <button class="search-submit" type="submit" aria-label="Search article button">Search</button>
+        </form>
+    </nav>
     <div class="flex-col-center">
         <div class="main-content">
             <a href="/view/{{.Id}}">Back to Article Page</a>

@@ -1,7 +1,8 @@
 # go-wiki
+
 This repo contains random experiments for me creating a basic wiki utilizing Golang as a backend.
 
-This includes a markdown parser for the wiki pages
+This includes a custom realtime markdown parser
 
 
 # To Run
